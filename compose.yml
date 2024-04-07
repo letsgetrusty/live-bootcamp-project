@@ -1,0 +1,18 @@
+services:
+  app-service:
+    # TODO: change "letsgetrusty" to your Docker Hub username
+    image: letsgetrusty/app-service # specify name of image on Docker Hub
+    restart: "always" # automatically restart container when server crashes
+    environment: # set up environment variables
+      AUTH_SERVICE_IP: ${AUTH_SERVICE_IP:-localhost} # Use localhost as the default value
+    ports:
+      - "8000:8000" # expose port 8000 so that applications outside the container can connect to it 
+    depends_on: # only run app-service after auth-service has started
+      auth-service:
+        condition: service_started
+  auth-service:
+    # TODO: change "letsgetrusty" to your Docker Hub username
+    image: letsgetrusty/auth-service
+    restart: "always" # automatically restart container when server crashes
+    ports:
+      - "3000:3000" # expose port 3000 so that applications outside the container can connect to it 
