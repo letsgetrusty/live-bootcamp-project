@@ -8,7 +8,7 @@ pub struct TestApp {
 
 impl TestApp {
     pub async fn new() -> Self {
-        let app = Application::build("127.0.0.1:0")
+        let app = Application::build("0.0.0.0:0")
             .await
             .expect("Failed to build app");
 
