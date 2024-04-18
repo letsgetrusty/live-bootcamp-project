@@ -11,4 +11,5 @@ pub use email_client::*;
 pub use error::*;
 pub use password::*;
 pub use password::*;
+pub use password::*;
 pub use user::*;
