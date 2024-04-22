@@ -19,11 +19,6 @@ pub mod routes;
 pub mod services;
 pub mod utils;
 
-pub mod app_state;
-pub mod domain;
-pub mod routes;
-pub mod services;
-
 pub struct Application {
     server: Serve<Router, Router>,
     pub address: String,
