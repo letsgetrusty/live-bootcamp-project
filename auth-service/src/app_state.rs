@@ -21,7 +21,7 @@ impl AppState {
         user_store: UserStoreType,
         banned_token_store: BannedTokenStoreType,
         two_fa_code_store: TwoFACodeStoreType,
-        email_client: EmaislClientType,
+        email_client: EmailClientType,
     ) -> Self {
         Self {
             user_store,
