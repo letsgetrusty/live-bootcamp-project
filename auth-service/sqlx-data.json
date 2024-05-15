@@ -1,0 +1,49 @@
+{
+  "db": "PostgreSQL",
+  "39368a836092c98e5d727b8c0dc2b4860711cf7c0f0242ea8974e9dfbfe90993": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Bool"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO users (email, password_hash, requires_2fa)\n            VALUES ($1, $2, $3)\n            "
+  },
+  "995129f5461e40599fefa0fb08c9ef4068b67a056019ae4c1df986f7ae597979": {
+    "describe": {
+      "columns": [
+        {
+          "name": "email",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "password_hash",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "requires_2fa",
+          "ordinal": 2,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT email, password_hash, requires_2fa\n            FROM users\n            WHERE email = $1\n            "
+  }
+}
