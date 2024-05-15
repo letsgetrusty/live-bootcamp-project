@@ -15,5 +15,26 @@ services:
     restart: "always"
     environment:
       JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db:5432"
     ports:
-      - "3000:3000" # expose port 3000 so that applications outside the container can connect to it 
+      - "3000:3000" # expose port 3000 so that applications outside the container can connect to it
+    depends_on:
+      - db
+  db:
+    image: postgres:15.2-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+  redis:
+    image: redis:7.0-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+volumes:
+  db:
+    driver: local

@@ -1,12 +1,11 @@
 use auth_service::{utils::constants::JWT_COOKIE_NAME, ErrorResponse};
 use reqwest::Url;
+use test_helpers::api_test;
 
 use crate::helpers::{get_random_email, TestApp};
 
-#[tokio::test]
+#[api_test]
 async fn should_return_200_if_valid_jwt_cookie() {
-    let app = TestApp::new().await;
-
     let random_email = get_random_email();
 
     let signup_body = serde_json::json!({
@@ -57,10 +56,8 @@ async fn should_return_200_if_valid_jwt_cookie() {
     assert!(contains_token);
 }
 
-#[tokio::test]
+#[api_test]
 async fn should_return_400_if_jwt_cookie_missing() {
-    let app = TestApp::new().await;
-
     let response = app.post_logout().await;
 
     assert_eq!(
@@ -85,10 +82,8 @@ async fn should_return_400_if_jwt_cookie_missing() {
     );
 }
 
-#[tokio::test]
+#[api_test]
 async fn should_return_400_if_logout_called_twice_in_a_row() {
-    let app = TestApp::new().await;
-
     let random_email = get_random_email();
 
     let signup_body = serde_json::json!({
@@ -140,10 +135,8 @@ async fn should_return_400_if_logout_called_twice_in_a_row() {
     );
 }
 
-#[tokio::test]
+#[api_test]
 async fn should_return_401_if_invalid_token() {
-    let app = TestApp::new().await;
-
     // add invalid cookie
     app.cookie_jar.add_cookie_str(
         &format!(
