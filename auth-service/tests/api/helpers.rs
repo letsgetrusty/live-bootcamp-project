@@ -1,18 +1,21 @@
 use core::panic;
-use reqwest::cookie::Jar;
+use reqwest::{cookie::Jar, Client};
+use secrecy::{ExposeSecret, Secret};
 use sqlx::{
     postgres::{PgConnectOptions, PgPoolOptions},
     Connection, Executor, PgConnection, PgPool,
 };
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use wiremock::MockServer;
 
 use auth_service::{
     app_state::{AppState, BannedTokenStoreType, TwoFACodeStoreType},
+    domain::Email,
     get_postgres_pool, get_redis_client,
     services::{
         data_stores::{PostgresUserStore, RedisBannedTokenStore, RedisTwoFACodeStore},
-        mock_email_client::MockEmailClient,
+        postmark_email_client::PostmarkEmailClient,
     },
     utils::constants::{test, DATABASE_URL, DEFAULT_REDIS_HOSTNAME},
     Application,
@@ -27,6 +30,7 @@ pub struct TestApp {
     pub banned_token_store: BannedTokenStoreType,
     pub two_fa_code_store: TwoFACodeStoreType,
     pub http_client: reqwest::Client,
+    pub email_server: MockServer,
     pub db_name: String,
     pub clean_up_called: bool,
 }
@@ -43,7 +47,9 @@ impl TestApp {
         )));
         let two_fa_code_store = Arc::new(RwLock::new(RedisTwoFACodeStore::new(redis_connection)));
 
-        let email_client = Arc::new(MockEmailClient);
+        let email_server = MockServer::start().await;
+        let base_url = email_server.uri();
+        let email_client = Arc::new(configure_postmark_email_client(base_url));
 
         let app_state = AppState::new(
             user_store,
@@ -73,6 +79,7 @@ impl TestApp {
             banned_token_store,
             two_fa_code_store,
             http_client,
+            email_server,
             db_name,
             clean_up_called: false,
         }
@@ -170,7 +177,11 @@ async fn configure_postgresql(db_name: &str) -> PgPool {
 
     configure_database(&postgresql_conn_url, db_name).await;
 
-    let postgresql_conn_url_with_db = format!("{}/{}", postgresql_conn_url, db_name);
+    let postgresql_conn_url_with_db = Secret::new(format!(
+        "{}/{}",
+        postgresql_conn_url.expose_secret(),
+        db_name
+    ));
 
     get_postgres_pool(&postgresql_conn_url_with_db)
         .await
@@ -180,7 +191,7 @@ async fn configure_postgresql(db_name: &str) -> PgPool {
 async fn delete_database(db_name: &str) {
     let postgresql_conn_url = DATABASE_URL.to_owned();
 
-    let connection_options = PgConnectOptions::from_str(&postgresql_conn_url)
+    let connection_options = PgConnectOptions::from_str(postgresql_conn_url.expose_secret())
         .expect("Failed to parse PostgreSQL connection string");
 
     let mut connection = PgConnection::connect_with(&connection_options)
@@ -211,9 +222,9 @@ async fn delete_database(db_name: &str) {
         .expect("Failed to drop the database.");
 }
 
-async fn configure_database(db_conn_string: &str, db_name: &str) {
+async fn configure_database(db_conn_string: &Secret<String>, db_name: &str) {
     let connection = PgPoolOptions::new()
-        .connect(db_conn_string)
+        .connect(db_conn_string.expose_secret())
         .await
         .expect("Failed to create Postgres connection pool.");
 
@@ -223,7 +234,7 @@ async fn configure_database(db_conn_string: &str, db_name: &str) {
         .await
         .expect("Failed to create database.");
 
-    let db_conn_string = format!("{}/{}", db_conn_string, db_name);
+    let db_conn_string = format!("{}/{}", db_conn_string.expose_secret(), db_name);
 
     let connection = PgPoolOptions::new()
         .connect(&db_conn_string)
@@ -244,4 +255,17 @@ fn configure_redis() -> redis::Connection {
         .expect("Failed to get Redis client")
         .get_connection()
         .expect("Failed to get Redis connection")
+}
+
+fn configure_postmark_email_client(base_url: String) -> PostmarkEmailClient {
+    let postmark_auth_token = Secret::new("auth_token".to_owned());
+
+    let sender = Email::parse(Secret::new(test::email_client::SENDER.to_owned())).unwrap();
+
+    let http_client = Client::builder()
+        .timeout(test::email_client::TIMEOUT)
+        .build()
+        .expect("Failed to build HTTP client");
+
+    PostmarkEmailClient::new(base_url, sender, postmark_auth_token, http_client)
 }
