@@ -22,6 +22,8 @@ logoutLink.addEventListener("click", (e) => {
 });
 
 (() => {
+    console.debug("Initializing app.js");
+
     fetch('/protected').then(response => {
         if (response.ok) {
             loginLink.style.display = "none";
