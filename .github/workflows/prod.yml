@@ -29,7 +29,10 @@ jobs:
         restore-keys: ${{ runner.os }}-cargo-
 
     - name: Install Rust
-      run: rustup update stable && rustup default stable
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
 
     - name: Build and test app-service code
       working-directory: ./app-service
@@ -93,6 +96,6 @@ jobs:
         script: |
           cd ~
           export AUTH_SERVICE_IP=${{ vars.DROPLET_IP }}
-          docker compose down
-          docker compose pull
-          docker compose up -d
+          docker-compose down
+          docker-compose pull
+          docker-compose up -d
