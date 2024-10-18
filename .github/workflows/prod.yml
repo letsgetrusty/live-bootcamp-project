@@ -2,9 +2,9 @@ name: Build, Test and Deploy to Prod
 
 # Trigger the workflow when changes are pushed to the main branch
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 jobs:
