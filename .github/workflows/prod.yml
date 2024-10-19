@@ -34,17 +34,25 @@ jobs:
         profile: minimal
         toolchain: stable
 
+    - name: Install cargo-nextest
+      uses: baptiste0928/cargo-install@v1
+      with:
+        crate: cargo-nextest
+        args: --locked
+        # Uncomment the following line if you'd like to stay on the 0.9 series
+        # version: 0.9
+
     - name: Build and test app-service code
       working-directory: ./app-service
       run: |
         cargo build --verbose
-        cargo test --verbose
+        cargo nextest run
 
     - name: Build and test auth-service code
       working-directory: ./auth-service
       run: |
         cargo build --verbose
-        cargo test --verbose
+        cargo nextest run
 
       # Set up Docker Buildx for multi-platform builds
     - name: Set up Docker Buildx
