@@ -6,8 +6,13 @@ info:
   version: 1.0.0
 
 servers:
-  - url: 'http://example.com/api'
-    description: Main server
+  - url: 'http://localhost:3000/api'
+    description: Main server local debug
+  - url: 'http://67.205.177.162:3000/api'
+    description: Main server DigitalOcean via IP
+  - url: 'http://lgr.aldass.dev:3000/api'
+    description: Main server DigitalOcean via domain name
+
 
 paths:
   /:
