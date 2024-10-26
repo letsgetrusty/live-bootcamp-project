@@ -42,7 +42,7 @@ jobs:
 
             apt install certbot python3-certbot-nginx -y            
             ln -sf /etc/nginx/sites-available/${{ env.DOMAIN_NAME }} /etc/nginx/sites-enabled/
-            certbot --nginx -d ${{ env.DOMAIN_NAME }}
+            echo "1" | certbot --nginx -d ${{ env.DOMAIN_NAME }}
             nginx -t
             systemctl restart nginx
             certbot renew --dry-run
