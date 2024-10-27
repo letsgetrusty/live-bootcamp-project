@@ -24,7 +24,7 @@ jobs:
     - name: Copy nginx config for domain
       run: sshpass -v -p ${{ secrets.DROPLET_PASSWORD }} scp -o StrictHostKeyChecking=no ./config/nginx/${{ env.DOMAIN_NAME }}.conf root@${{ vars.DROPLET_IP }}:/etc/nginx/sites-enabled/${{ env.DOMAIN_NAME }}
 
-    - name: SSH Config
+    - name: SSL Config
       uses: appleboy/ssh-action@master
       with:
         host: ${{ vars.DROPLET_IP }}
