@@ -2,19 +2,23 @@ use std::error::Error;
 
 use axum::{routing::post, serve::Serve, Router};
 use routes::{login, logout, signup, verify_2fa, verify_token};
-use tower_http::services::ServeDir;
+use tokio::net::TcpListener;
+use tower_http::services::{ServeDir, ServeFile};
 
 mod routes;
 
 pub struct Application {
-    server: Serve<Router, Router>,
+    server: Serve<TcpListener, Router, Router>,
     pub address: String,
 }
 
 impl Application {
     pub async fn build(address: &str) -> Result<Self, Box<dyn Error>> {
+        let serve_dir =
+            ServeDir::new("assets").not_found_service(ServeFile::new("assets/index.html"));
+
         let router = Router::new()
-            .nest_service("/", ServeDir::new("assets"))
+            .fallback_service(serve_dir)
             .route("/signup", post(signup))
             .route("/login", post(login))
             .route("/verify-2fa", post(verify_2fa))
