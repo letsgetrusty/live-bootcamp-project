@@ -1,6 +1,5 @@
 services:
   app-service:
-    # TODO: change "letsgetrusty" to your Docker Hub username
     image: smisha/app-service # specify name of image on Docker Hub
     restart: "always" # automatically restart container when server crashes
     environment: # set up environment variables
@@ -11,7 +10,6 @@ services:
       auth-service:
         condition: service_started
   auth-service:
-    # TODO: change "letsgetrusty" to your Docker Hub username
     image: smisha/auth-service
     restart: "always" # automatically restart container when server crashes
     ports:
