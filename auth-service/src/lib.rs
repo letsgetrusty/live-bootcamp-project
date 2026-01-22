@@ -1,6 +1,9 @@
 use tokio::net::TcpListener;
-use axum::{Router, response::IntoResponse, routing::{get, post}, serve::Serve, http::StatusCode};
+use axum::{Router, routing::post, serve::Serve};
 use tower_http::{services::{ServeDir, ServeFile}};
+
+pub mod routes;
+use routes::*;
 
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
@@ -38,26 +41,4 @@ impl Application {
 }
 
 
-async fn signup() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
 
-
-async fn login() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-
-async fn verify_2fa() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-
-async fn logout() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-
-async fn verify_token() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}

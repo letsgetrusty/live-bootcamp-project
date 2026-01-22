@@ -26,7 +26,9 @@ impl TestApp {
             .expect("Failed to execute request.")
     }
 
-    pub async fn post_signup(&self, body: &serde_json::Value) -> reqwest::Response {
+    pub async fn post_signup<Body>(&self, body: &Body) -> reqwest::Response 
+    where Body: serde::Serialize
+    {
         self.client
             .post(format!("{}/signup", &self.address))
             .json(body)
@@ -70,4 +72,10 @@ impl TestApp {
             .await
             .expect("Failed to execute request.")
     }
+}
+
+
+pub fn get_random_email() -> String {
+    let uuid = uuid::Uuid::new_v4();
+    format!("{}@example.com", uuid)
 }
