@@ -1,4 +1,4 @@
-use auth_service::Application;
+use auth_service::{Application, domain::user};
 use reqwest;
 
 
@@ -10,7 +10,10 @@ pub struct TestApp {
 
 impl TestApp {
     pub async fn run() -> Self {
-        let app = Application::build("127.0.0.1:0").await.expect("Failed to build application");
+        let user_store = auth_service::app_state::UserStoreType::default();
+        let app_state = auth_service::app_state::AppState::new(user_store);
+
+        let app = Application::build(app_state, "127.0.0.1:0").await.expect("Failed to build application");
         let address = format!("http://{}", app.address.clone());
 
         #[allow(clippy::let_underscore_future)]

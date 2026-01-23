@@ -3,7 +3,14 @@ use axum::{Router, routing::post, serve::Serve};
 use tower_http::{services::{ServeDir, ServeFile}};
 
 pub mod routes;
+pub mod domain;
+pub mod services;
+pub mod app_state;
+
 use routes::*;
+use domain::*;
+use services::*;
+use app_state::AppState;
 
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
@@ -15,7 +22,7 @@ pub struct Application {
 }
 
 impl Application {
-    pub async fn build(address: &str) -> Result<Self> {
+    pub async fn build(app_state: AppState, address: &str) -> Result<Self> {
         let assets_dir = ServeDir::new("assets")
         .not_found_service(ServeFile::new("assets/index.html"));
 
@@ -25,7 +32,8 @@ impl Application {
             .route("/login", post(login))
             .route("/verify-2fa", post(verify_2fa))
             .route("/logout", post(logout))
-            .route("/verify-token", post(verify_token));
+            .route("/verify-token", post(verify_token))
+            .with_state(app_state);
         let listener = TcpListener::bind(address).await?; 
         let address = listener.local_addr()?.to_string();
         let server = axum::serve(listener, router);
