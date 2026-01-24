@@ -1,6 +1,5 @@
-use auth_service::{Application, domain::user};
+use auth_service::{Application, app_state::{AppState, UserStoreType}};
 use reqwest;
-
 
 
 pub struct TestApp {
@@ -10,8 +9,8 @@ pub struct TestApp {
 
 impl TestApp {
     pub async fn run() -> Self {
-        let user_store = auth_service::app_state::UserStoreType::default();
-        let app_state = auth_service::app_state::AppState::new(user_store);
+        let user_store = UserStoreType::default();
+        let app_state = AppState::new(user_store);
 
         let app = Application::build(app_state, "127.0.0.1:0").await.expect("Failed to build application");
         let address = format!("http://{}", app.address.clone());

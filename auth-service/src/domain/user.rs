@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct User {
     pub requires_2fa: bool,
     pub password: String,

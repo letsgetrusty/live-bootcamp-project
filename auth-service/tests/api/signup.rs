@@ -1,5 +1,4 @@
 use crate::helpers::TestApp;
-use axum::body;
 
 
 mod tests {
@@ -14,8 +13,6 @@ mod tests {
     #[tokio::test]
     async fn should_return_422_if_malformed_input() {
         let app = TestApp::run().await;
-
-        let email = get_random_email();
 
         let test_cases = [
             json!({

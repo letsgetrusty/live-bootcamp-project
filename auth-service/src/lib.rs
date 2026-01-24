@@ -9,7 +9,6 @@ pub mod app_state;
 
 use routes::*;
 use domain::{error::AuthAPIError};
-use services::*;
 use app_state::AppState;
 
 
@@ -70,6 +69,3 @@ impl Application {
         Ok(())
     }
 }
-
-
-
