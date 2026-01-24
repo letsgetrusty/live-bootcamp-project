@@ -1,5 +1,5 @@
 use tokio::net::TcpListener;
-use axum::{Router, routing::post, serve::Serve};
+use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::post, serve::Serve};
 use tower_http::{services::{ServeDir, ServeFile}};
 
 pub mod routes;
@@ -8,12 +8,35 @@ pub mod services;
 pub mod app_state;
 
 use routes::*;
-use domain::*;
+use domain::{error::AuthAPIError};
 use services::*;
 use app_state::AppState;
 
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct ErrorResponse {
+    pub error: String,
+}
+
+
+impl IntoResponse for AuthAPIError {
+    fn into_response(self) -> axum::response::Response {
+        let (status, error_message) = match self {
+            AuthAPIError::InvalidCredentials => (StatusCode::BAD_REQUEST, "Invalid credentials"),
+            AuthAPIError::UserAlreadyExists => (StatusCode::CONFLICT, "User already exists"),
+            AuthAPIError::UnexpectedError => (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error"),
+        };
+
+        let body = Json(ErrorResponse {
+            error: error_message.to_string(),
+        });
+
+        (status, body).into_response()
+    }
+}
 
 
 pub struct Application {
