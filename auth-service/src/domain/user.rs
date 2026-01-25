@@ -1,12 +1,14 @@
+use crate::domain::{email::Email, password::Password};
+
 #[derive(Clone)]
 pub struct User {
     pub requires_2fa: bool,
-    pub password: String,
-    pub email: String,
+    pub password: Password,
+    pub email: Email,
 }
 
 impl User {
-    pub fn new(email: String, password: String, requires_2fa: bool) -> Self {
+    pub fn new(email: Email, password: Password, requires_2fa: bool) -> Self {
         Self {
             email,
             password,
