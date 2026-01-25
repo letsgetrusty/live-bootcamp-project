@@ -24,7 +24,9 @@ pub struct ErrorResponse {
 impl IntoResponse for AuthAPIError {
     fn into_response(self) -> axum::response::Response {
         let (status, error_message) = match self {
+            AuthAPIError::MalformedRequest => (StatusCode::UNPROCESSABLE_ENTITY, "Malformed request"),
             AuthAPIError::InvalidCredentials => (StatusCode::BAD_REQUEST, "Invalid credentials"),
+            AuthAPIError::IncorrectCredentials => (StatusCode::UNAUTHORIZED, "Incorrect credentials"),
             AuthAPIError::UserAlreadyExists => (StatusCode::CONFLICT, "User already exists"),
             AuthAPIError::UnexpectedError => (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error"),
         };
