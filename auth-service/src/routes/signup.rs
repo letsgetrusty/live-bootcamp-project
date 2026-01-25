@@ -17,7 +17,7 @@ pub async fn signup(
 
     let user = User::new(email, password, request.requires_2fa);
 
-    let mut user_store = _state.user_store.write().await;
+    let user_store = _state.user_store;
     if user_store.get_user(&user.email).await.is_ok() {
         return Err(AuthAPIError::UserAlreadyExists);
     }

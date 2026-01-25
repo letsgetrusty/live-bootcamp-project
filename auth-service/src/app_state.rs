@@ -1,13 +1,12 @@
 use std::{ops::Deref, sync::Arc};
-use tokio::sync::RwLock;
 use crate::services::{data_store::UserStore, hashmap_user_store::HashmapUserStore};
 
 
 #[derive(Clone)]
-pub struct UserStoreType(pub Arc<RwLock<Box<dyn UserStore>>>);
+pub struct UserStoreType(pub Arc<Box<dyn UserStore>>);
 
 impl Deref for UserStoreType {
-    type Target = Arc<RwLock<Box<dyn UserStore>>>;
+    type Target = Arc<Box<dyn UserStore>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -17,7 +16,7 @@ impl Deref for UserStoreType {
 impl Default for UserStoreType {
     fn default() -> Self {
         let store: Box<dyn UserStore> = Box::new(HashmapUserStore::default());
-        Self(Arc::new(RwLock::new(store)))
+        Self(Arc::new(store))
     }
 }
 
