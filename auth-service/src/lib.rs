@@ -1,6 +1,6 @@
 use tokio::net::TcpListener;
-use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::post, serve::Serve};
-use tower_http::{services::{ServeDir, ServeFile}};
+use axum::{Json, Router, http::{Method, StatusCode}, response::{IntoResponse, Response}, routing::post, serve::Serve};
+use tower_http::{cors::CorsLayer, services::{ServeDir, ServeFile}};
 
 pub mod routes;
 pub mod domain;
@@ -30,6 +30,8 @@ impl IntoResponse for AuthAPIError {
             AuthAPIError::IncorrectCredentials => (StatusCode::UNAUTHORIZED, "Incorrect credentials"),
             AuthAPIError::UserAlreadyExists => (StatusCode::CONFLICT, "User already exists"),
             AuthAPIError::UnexpectedError => (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error"),
+            AuthAPIError::MissingToken => (StatusCode::BAD_REQUEST, "Missing token"),
+            AuthAPIError::InvalidToken => (StatusCode::UNAUTHORIZED, "Invalid token")
         };
 
         let body = Json(ErrorResponse {
@@ -48,6 +50,15 @@ pub struct Application {
 
 impl Application {
     pub async fn build(app_state: AppState, address: &str) -> Result<Self> {
+        let allowed_origins = [
+            "http://localhost:8000".parse()?,
+        ];
+
+        let cors = CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_credentials(true)
+        .allow_origin(allowed_origins);
+
         let assets_dir = ServeDir::new("assets")
         .not_found_service(ServeFile::new("assets/index.html"));
 
@@ -58,7 +69,8 @@ impl Application {
             .route("/verify-2fa", post(verify_2fa))
             .route("/logout", post(logout))
             .route("/verify-token", post(verify_token))
-            .with_state(app_state);
+            .with_state(app_state)
+            .layer(cors);
         let listener = TcpListener::bind(address).await?; 
         let address = listener.local_addr()?.to_string();
         let server = axum::serve(listener, router);

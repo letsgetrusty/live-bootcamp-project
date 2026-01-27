@@ -1,23 +1,35 @@
-use auth_service::{Application, app_state::{AppState, UserStoreType}};
-use reqwest;
+use std::sync::Arc;
+
+use auth_service::{Application, app_state::{AppState, BannedTokenStoreType, UserStoreType}, utils::constants::test};
+use reqwest::{self, Client, cookie::Jar};
 
 
 pub struct TestApp {
     pub address: String,
+    pub cookie_jar: Arc<Jar>,
     pub client: reqwest::Client,
+    pub banned_token_store: BannedTokenStoreType,
 }
 
 impl TestApp {
     pub async fn run() -> Self {
         let user_store = UserStoreType::default();
-        let app_state = AppState::new(user_store);
+        let banned_token_store = BannedTokenStoreType::default();
+        let app_state = AppState::new(user_store, banned_token_store.clone());
 
-        let app = Application::build(app_state, "127.0.0.1:0").await.expect("Failed to build application");
+        let app = Application::build(app_state, test::APP_ADDRESS).await.expect("Failed to build application");
         let address = format!("http://{}", app.address.clone());
 
         #[allow(clippy::let_underscore_future)]
         let _ = tokio::spawn(app.run());
-        Self { address, client: reqwest::Client::new() }
+
+        let cookie_jar = Arc::new(Jar::default());
+        let http_client = Client::builder()
+        .cookie_provider(cookie_jar.clone())
+        .build()
+        .unwrap();
+
+        Self { address, cookie_jar, client: http_client, banned_token_store }
     }
 
     pub async fn get_root(&self) -> reqwest::Response {
@@ -68,7 +80,8 @@ impl TestApp {
             .expect("Failed to execute request.")
     }
 
-    pub async fn verify_token(&self, body: &serde_json::Value) -> reqwest::Response {
+    pub async fn post_verify_token<Body>(&self, body: &Body) -> reqwest::Response
+    where Body: serde::Serialize {
         self.client
             .post(format!("{}/verify-token", &self.address))
             .json(body)
