@@ -6,6 +6,7 @@ pub mod routes;
 pub mod domain;
 pub mod services;
 pub mod app_state;
+pub mod utils;
 
 use routes::*;
 use domain::{error::AuthAPIError};

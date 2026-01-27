@@ -2,6 +2,10 @@ use crate::helpers::TestApp;
 
 
 mod tests {
+    use auth_service::utils::constants::JWT_COOKIE_NAME;
+
+    use crate::helpers::get_random_email;
+
     use super::*;
 
     #[tokio::test]
@@ -93,5 +97,38 @@ mod tests {
         let response = app.post_login(&non_existent_email_body).await;
 
         assert_eq!(response.status().as_u16(), 401);
+    }
+
+    #[tokio::test]
+    async fn should_return_200_if_valid_credentials_and_2fa_disabled() {
+        let app = TestApp::run().await;
+
+        let email = get_random_email();
+
+        // Create a user in the test database
+        let signup_body = serde_json::json!({
+            "email": email,
+            "password": "password123",
+            "requires2FA": false,
+        });
+
+        let response = app.post_signup(&signup_body).await;
+
+        assert_eq!(response.status().as_u16(), 201);
+
+        // Attempt to login with valid credentials
+        let login_body = serde_json::json!({
+            "email": email,
+            "password": "password123",
+        });
+
+        let response = app.post_login(&login_body).await;
+
+        assert_eq!(response.status().as_u16(), 200);
+
+        let auth_cookie = response
+        .cookies()
+        .find(|c| c.name() == JWT_COOKIE_NAME)
+        .expect("no auth cookie found");
     }
 }

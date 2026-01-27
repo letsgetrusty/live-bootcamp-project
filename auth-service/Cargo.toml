@@ -7,13 +7,18 @@ edition = "2021"
 
 [dependencies]
 axum = "0.8.6"
+axum-extra = { version = "0.12.5", features = ["cookie"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
 uuid = { version = "1.18.1", default-features = false, features = ["v4", "serde"] }
 tokio = { version = "1.48.0", features = ["full"] }
 tower-http = { version = "0.6.6", features = ["fs"] }
 async-trait = "0.1.89"
+jsonwebtoken = { version = "10.2.0", features = ["rust_crypto"] }
+chrono = "0.4.43"
+dotenvy = "0.15.7"
+lazy_static = "1.5.0"
 
 
 [dev-dependencies]
-reqwest = { version = "0.13.1", default-features = false, features = ["json"] }
+reqwest = { version = "0.13.1", default-features = false, features = ["json", "cookies"] }
