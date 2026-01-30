@@ -13,10 +13,13 @@ pub struct HashmapUserStore {
 #[async_trait::async_trait]
 impl UserStore for HashmapUserStore {
     async fn add_user(&self, user: User) -> Result<(), UserStoreError> {
-        if self.users.read().await.contains_key(user.email.as_ref()) {
+        let mut guard  = self.users.write().await;
+
+        if guard.contains_key(user.email.as_ref()) {
             return Err(UserStoreError::UserAlreadyExists);
         }
-        self.users.write().await.insert(user.email.as_ref().to_string(), user);
+        guard.insert(user.email.as_ref().to_string(), user);
+
         Ok(())
     }
 

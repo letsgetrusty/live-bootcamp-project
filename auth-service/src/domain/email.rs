@@ -1,7 +1,11 @@
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Email(String);
 
 impl Email {
+    pub fn new(s: &str) -> Self {
+        Self(s.to_string())
+    }
+
     pub fn parse(s: String) -> Result<Email, String> {
         if !s.is_empty() && s.contains('@') {
             Ok(Email(s))

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use auth_service::{Application, app_state::{AppState, BannedTokenStoreType, UserStoreType}, utils::constants::test};
+use auth_service::{Application, app_state::{AppState, BannedTokenStoreType, TwoFACodeStoreType, UserStoreType}, utils::constants::test};
 use reqwest::{self, Client, cookie::Jar};
 
 
@@ -9,13 +9,20 @@ pub struct TestApp {
     pub cookie_jar: Arc<Jar>,
     pub client: reqwest::Client,
     pub banned_token_store: BannedTokenStoreType,
+    pub two_fa_code_store: TwoFACodeStoreType,
 }
 
 impl TestApp {
     pub async fn run() -> Self {
         let user_store = UserStoreType::default();
         let banned_token_store = BannedTokenStoreType::default();
-        let app_state = AppState::new(user_store, banned_token_store.clone());
+        let two_fa_code_store = TwoFACodeStoreType::default();
+
+        let app_state = AppState::new(
+            user_store,
+            banned_token_store.clone(),
+            two_fa_code_store.clone(),
+        );
 
         let app = Application::build(app_state, test::APP_ADDRESS).await.expect("Failed to build application");
         let address = format!("http://{}", app.address.clone());
@@ -29,7 +36,7 @@ impl TestApp {
         .build()
         .unwrap();
 
-        Self { address, cookie_jar, client: http_client, banned_token_store }
+        Self { address, cookie_jar, client: http_client, banned_token_store, two_fa_code_store }
     }
 
     pub async fn get_root(&self) -> reqwest::Response {
