@@ -19,7 +19,7 @@ chrono = "0.4.43"
 dotenvy = "0.15.7"
 lazy_static = "1.5.0"
 rand = "0.9.2"
-
+sqlx = { version = "0.8.6", features = [ "runtime-tokio-rustls", "postgres", "migrate"] }
 
 [dev-dependencies]
 reqwest = { version = "0.13.1", default-features = false, features = ["json", "cookies"] }

@@ -1,6 +1,7 @@
 use tokio::net::TcpListener;
 use axum::{Json, Router, http::{Method, StatusCode}, response::{IntoResponse, Response}, routing::post, serve::Serve};
 use tower_http::{cors::CorsLayer, services::{ServeDir, ServeFile}};
+use sqlx::{postgres::PgPoolOptions, PgPool};
 
 pub mod routes;
 pub mod domain;
@@ -83,4 +84,11 @@ impl Application {
         self.server.await?;
         Ok(())
     }
+}
+
+
+
+pub async fn get_postgres_pool(url: &str) -> std::result::Result<PgPool, sqlx::Error> {
+    // Create a new PostgreSQL connection pool
+    PgPoolOptions::new().max_connections(5).connect(url).await
 }
