@@ -65,7 +65,9 @@ async fn handle_2fa(
     let login_attempt_id = LoginAttemptId::default();
     let code = TwoFACode::default();
 
-    state.two_fa_code_store.lock().await.add_code(email.to_owned(), login_attempt_id.clone(), code).await.map_err(|_| AuthAPIError::UnexpectedError)?;
+    state.two_fa_code_store.lock().await.add_code(email.to_owned(), login_attempt_id.clone(), code.clone()).await.map_err(|_| AuthAPIError::UnexpectedError)?;
+
+    state.email_client.send_email(email, "2FA Access Token", &format!("{}", code.as_ref())).await.map_err(|_| AuthAPIError::UnexpectedError)?;
 
     // Finally, we need to return the login attempt ID to the client
     let response = Json(LoginResponse::TwoFactorAuth(TwoFactorAuthResponse {

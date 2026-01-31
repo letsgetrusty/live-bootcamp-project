@@ -15,5 +15,5 @@ while IFS= read -r line; do
   fi
 done < <(grep -v "^#" "$ENV_FILE")
 
-docker-compose build
-docker-compose up
+docker compose build
+docker compose up

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use auth_service::{Application, app_state::{AppState, BannedTokenStoreType, TwoFACodeStoreType, UserStoreType}, utils::constants::test};
+use auth_service::{Application, app_state::{AppState, BannedTokenStoreType, EmailClientType, TwoFACodeStoreType, UserStoreType}, utils::constants::test};
 use reqwest::{self, Client, cookie::Jar};
 
 
@@ -17,11 +17,13 @@ impl TestApp {
         let user_store = UserStoreType::default();
         let banned_token_store = BannedTokenStoreType::default();
         let two_fa_code_store = TwoFACodeStoreType::default();
+        let email_client = EmailClientType::default();
 
         let app_state = AppState::new(
             user_store,
             banned_token_store.clone(),
             two_fa_code_store.clone(),
+            email_client,
         );
 
         let app = Application::build(app_state, test::APP_ADDRESS).await.expect("Failed to build application");
