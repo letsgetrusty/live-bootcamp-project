@@ -5,7 +5,12 @@ use axum::{routing::post, Router};
 use tokio::net::TcpListener;
 use tower_http::services::ServeDir;
 
+pub mod app_state;
+pub mod domain;
 pub mod routes;
+pub mod services;
+
+use app_state::AppState;
 
 // This struct encapsulates our application-related logic.
 pub struct Application {
@@ -16,15 +21,15 @@ pub struct Application {
 }
 
 impl Application {
-    pub async fn build(address: &str) -> Result<Self, Box<dyn Error>> {
-        let assets_dir = ServeDir::new("assets");
+    pub async fn build(app_state: AppState, address: &str) -> Result<Self, Box<dyn Error>> {
         let router = Router::new()
             .route("/signup", post(routes::signup))
             .route("/login", post(routes::login))
             .route("/logout", post(routes::logout))
             .route("/verify-2fa", post(routes::verify_2fa))
             .route("/verify-token", post(routes::verify_token))
-            .fallback_service(assets_dir);
+            .with_state(app_state)
+            .fallback_service(ServeDir::new("assets"));
 
         let listener = TcpListener::bind(address).await?;
         let address = listener.local_addr()?.to_string();
