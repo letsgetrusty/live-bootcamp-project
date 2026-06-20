@@ -20,9 +20,10 @@ pub async fn login(
 
     let user_store = &state.user_store.read().await;
 
-    if user_store.validate_user(&email, &password).await.is_err() {
-        return Err(AuthAPIError::IncorrectCredentials);
-    }
+    user_store
+        .validate_user(&email, &password)
+        .await
+        .map_err(|_| AuthAPIError::IncorrectCredentials)?;
 
     let user = user_store
         .get_user(&email)
