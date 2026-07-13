@@ -1,10 +1,8 @@
 # Start with image that has the Rust toolchain installed
-FROM rust:1.90-alpine AS chef
+FROM rust:1.91-alpine AS chef
 USER root
 # Add cargo-chef to cache dependencies
-RUN apk add --no-cache musl-dev
-RUN rustup update stable
-RUN cargo install cargo-chef --locked
+RUN apk add --no-cache musl-dev && cargo install cargo-chef --locked
 WORKDIR /app
 
 FROM chef AS planner
