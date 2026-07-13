@@ -12,32 +12,26 @@ use crate::{
 pub async fn logout(
     State(state): State<AppState>,
     jar: CookieJar,
-) -> (CookieJar, Result<impl IntoResponse, AuthAPIError>) {
-    let cookie = match jar.get(JWT_COOKIE_NAME) {
-        Some(cookie) => cookie,
-        None => return (jar, Err(AuthAPIError::MissingToken)),
-    };
+) -> Result<(CookieJar, impl IntoResponse), AuthAPIError> {
+    let cookie = jar.get(JWT_COOKIE_NAME).ok_or(AuthAPIError::MissingToken)?;
 
     // Validate token
     let token = SecretString::new(cookie.value().to_owned().into_boxed_str());
-    let _ = match validate_token(&token, state.banned_token_store.clone()).await {
-        Ok(claims) => claims,
-        Err(_) => return (jar, Err(AuthAPIError::InvalidToken)),
-    };
+    validate_token(&token, state.banned_token_store.clone())
+        .await
+        .map_err(|_| AuthAPIError::InvalidToken)?;
 
     // Add token to banned list
-    if let Err(e) = state
+    state
         .banned_token_store
         .write()
         .await
         .add_token(token.to_owned())
         .await
-    {
-        return (jar, Err(AuthAPIError::UnexpectedError(e.into())));
-    }
+        .map_err(|e| AuthAPIError::UnexpectedError(e.into()))?;
 
     // Remove jwt cookie
     let jar = jar.remove(cookie::Cookie::from(JWT_COOKIE_NAME));
 
-    (jar, Ok(StatusCode::OK))
+    Ok((jar, StatusCode::OK))
 }
